@@ -1,35 +1,11 @@
-"""DanBooru IMage Utility functions"""
+# DanBooru IMage Utility functions
 
 import cv2
 import numpy as np
 from PIL import Image
 
 
-def fill_transparent(image: Image.Image, color='WHITE'):
-    image = image.convert('RGBA')
-    new_image = Image.new('RGBA', image.size, color)
-    new_image.paste(image, mask=image)
-    image = new_image.convert('RGB')
-    return image
-
-
-def resize(pic: Image.Image, size: int, keep_ratio=True) -> Image.Image:
-    if not keep_ratio:
-        target_size = (size, size)
-    else:
-        min_edge = min(pic.size)
-        target_size = (
-            int(pic.size[0] / min_edge * size),
-            int(pic.size[1] / min_edge * size),
-        )
-
-    target_size = (target_size[0] & ~3, target_size[1] & ~3)
-
-    return pic.resize(target_size, resample=Image.Resampling.LANCZOS)
-
-
 def smart_imread(img, flag=cv2.IMREAD_UNCHANGED):
-    """ Read an image, convert to 24-bit if necessary """
     if img.endswith(".gif"):
         img = Image.open(img)
         img = img.convert("RGB")
@@ -40,7 +16,6 @@ def smart_imread(img, flag=cv2.IMREAD_UNCHANGED):
 
 
 def smart_24bit(img):
-    """ Convert an image to 24-bit if necessary """
     if img.dtype is np.dtype(np.uint16):
         img = (img / 257).astype(np.uint8)
 
@@ -54,7 +29,6 @@ def smart_24bit(img):
 
 
 def make_square(img, target_size):
-    """ Make an image square """
     old_size = img.shape[:2]
     desired_size = max(old_size)
     desired_size = max(desired_size, target_size)
@@ -72,7 +46,6 @@ def make_square(img, target_size):
 
 
 def smart_resize(img, size):
-    """ Resize an image """
     # Assumes the image has already gone through make_square
     if img.shape[0] > size:
         img = cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)

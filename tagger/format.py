@@ -1,4 +1,3 @@
-"""Format module, for formatting output filenames"""
 import re
 import hashlib
 
@@ -11,16 +10,17 @@ class Info(NamedTuple):
     output_ext: str
 
 
-def hashfun(i: Info, algo='sha1') -> str:
+def hash(i: Info, algo='sha1') -> str:
     try:
-        hasher = hashlib.new(algo)
-    except ImportError as err:
-        raise ValueError(f"'{algo}' is invalid hash algorithm") from err
+        hash = hashlib.new(algo)
+    except ImportError:
+        raise ValueError(f"'{algo}' is invalid hash algorithm")
 
+    # TODO: is okay to hash large image?
     with open(i.path, 'rb') as file:
-        hasher.update(file.read())
+        hash.update(file.read())
 
-    return hasher.hexdigest()
+    return hash.hexdigest()
 
 
 pattern = re.compile(r'\[([\w:]+)\]')
@@ -30,13 +30,13 @@ pattern = re.compile(r'\[([\w:]+)\]')
 available_formats: Dict[str, Callable] = {
     'name': lambda i: i.path.stem,
     'extension': lambda i: i.path.suffix[1:],
-    'hash': hashfun,
+    'hash': hash,
 
     'output_extension': lambda i: i.output_ext
 }
 
 
-def parse(match: re.Match, info: Info) -> str:
+def format(match: re.Match, info: Info) -> str:
     matches = match[1].split(':')
     name, args = matches[0], matches[1:]
 

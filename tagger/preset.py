@@ -1,17 +1,14 @@
-"""Module for Tagger, to save and load presets."""
 import os
 import json
 
 from typing import Tuple, List, Dict
 from pathlib import Path
-from gradio.context import Context
-from modules.images import sanitize_filename_part  # pylint: disable=E0401
+from modules.images import sanitize_filename_part
 
 PresetDict = Dict[str, Dict[str, any]]
 
 
 class Preset:
-    """Preset class for Tagger, to save and load presets."""
     base_dir: Path
     default_filename: str
     default_values: PresetDict
@@ -29,6 +26,7 @@ class Preset:
 
     def component(self, component_class: object, **kwargs) -> object:
         # find all the top components from the Gradio context and create a path
+        from gradio.context import Context
         parent = Context.block
         paths = [kwargs['label']]
 
@@ -45,7 +43,7 @@ class Preset:
             **self.default_values.get(path, {})
         })
 
-        component.path = path
+        setattr(component, 'path', path)
 
         self.components.append(component)
         return component
@@ -58,7 +56,7 @@ class Preset:
         configs = {}
 
         if path.is_file():
-            configs = json.loads(path.read_text(encoding='utf-8'))
+            configs = json.loads(path.read_text())
 
         return path, configs
 
@@ -76,7 +74,9 @@ class Preset:
             configs[component.path] = config
 
         self.base_dir.mkdir(0o777, True, True)
-        path.write_text(json.dumps(configs, indent=4), encoding='utf-8')
+        path.write_text(
+            json.dumps(configs, indent=4)
+        )
 
         return 'successfully saved the preset'
 
